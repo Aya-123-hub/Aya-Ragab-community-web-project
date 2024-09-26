@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aya Ragab Community</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Basic styles for the page */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        nav {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        nav ul li {
+            margin: 0 10px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+        }
+
+        section {
+            padding: 20px;
+        }
+
+        /* Styles for the blog display */
+        .blog-box {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #f9f9f9;
+        }
+
+        .blog-box img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+        /* Form styling */
+        form {
+            margin-bottom: 20px;
+        }
+
+        form input, form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        form button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .like-dislike-buttons button {
+            margin-right: 10px;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="logo">
+            <h1>Aya Ragab Community</h1>
+        </div>
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#blogs">Blogs</a></li>
+            <li><a href="#join">Join Us</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- Home Section -->
+    <section id="home">
+        <h2>Welcome to Aya Ragab Community</h2>
+        <p>Building connections and making a difference together.</p>
+    </section>
+
+    <!-- About Us Section -->
+    <section id="about">
+        <h2>About Us</h2>
+        <p>Our community is focused on bringing people together, sharing knowledge, and making a positive impact. Established in 2010, we continue to grow and inspire more individuals to connect.</p>
+    </section>
+
+    <!-- Blog Section -->
+    <section id="blogs">
+        <h2>Blogs</h2>
+        <form id="blog-form">
+            <input type="text" id="blog-title" placeholder="Blog Title" required>
+            <textarea id="blog-content" placeholder="Write your blog here..." rows="5" required></textarea>
+
+            <!-- Image Upload Section -->
+            <label for="blog-image"><strong>Upload an Image for the Blog:</strong></label>
+            <input type="file" id="blog-image" accept="image/*" required>
+
+            <!-- PDF and Word Uploads Section -->
+            <label for="blog-pdf"><strong>Upload a PDF (optional):</strong></label>
+            <input type="file" id="blog-pdf" accept=".pdf">
+
+            <label for="blog-doc"><strong>Upload a Word Document (optional):</strong></label>
+            <input type="file" id="blog-doc" accept=".doc,.docx">
+            
+            <button type="button" onclick="createBlog()">Create Blog</button>
+        </form>
+
+        <div class="blog-display" id="blog-display">
+            <!-- Blog posts will appear here -->
+        </div>
+    </section>
+
+    <!-- Join Us Section -->
+    <section id="join">
+        <h2>Join Us</h2>
+        <p>Want to become a part of our community? Sign up for our newsletter or register for upcoming events!</p>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <h2>Contact Us</h2>
+        <p>Email: <a href="mailto:ayaragab650@gmail.com">ayaragab650@gmail.com</a></p>
+        <p>Phone: +20 112 096 5157</p>
+    </section>
+
+    <!-- Sticky Footer -->
+    <footer>
+        <p>Connect with us: <a href="https://www.facebook.com/profile.php?id=100024744060698">Facebook</a></p>
+    </footer>
+
+    <!-- JavaScript for Blog Creation, Likes/Dislikes, and Share -->
+    <script>
+        document.addEventListener('DOMContentLoaded', loadBlogs);
+
+        function createBlog() {
+            const blogTitle = document.getElementById('blog-title').value;
+            const blogContent = document.getElementById('blog-content').value;
+            const blogImage = document.getElementById('blog-image').files[0];
+            const blogPdf = document.getElementById('blog-pdf').files[0];
+            const blogDoc = document.getElementById('blog-doc').files[0];
+
+            if (blogTitle && blogContent && blogImage) {
+                // Create blog object
+                const blog = {
+                    title: blogTitle,
+                    content: blogContent,
+                    imageUrl: URL.createObjectURL(blogImage),
+                    pdfUrl: blogPdf ? URL.createObjectURL(blogPdf) : null,
+                    docUrl: blogDoc ? URL.createObjectURL(blogDoc) : null,
+                    likes: 0,
+                    dislikes: 0,
+                };
+
+                // Save the blog to localStorage
+                let blogs = JSON.parse(localStorage.getItem('blogs')) || [];
+                blogs.push(blog);
+                localStorage.setItem('blogs', JSON.stringify(blogs));
+
+                // Refresh the blog display
+                loadBlogs();
+
+                // Clear form
+                document.getElementById('blog-form').reset();
+            } else {
+                alert('Please fill in the title, content, and upload an image.');
+            }
+        }
+
+        function loadBlogs() {
+            const blogDisplay = document.getElementById('blog-display');
+            blogDisplay.innerHTML = ''; // Clear the blog display
+
+            let blogs = JSON.parse(localStorage.getItem('blogs')) || [];
+
+            blogs.forEach((blog, index) => {
+                const blogBox = document.createElement('div');
+                blogBox.classList.add('blog-box');
+
+                // Display the image
+                const img = document.createElement('img');
+                img.src = blog.imageUrl;
+                blogBox.appendChild(img);
+
+                // Display the title and content
+                const h3 = document.createElement('h3');
+                h3.textContent = blog.title;
+                blogBox.appendChild(h3);
+
+                const p = document.createElement('p');
+                p.textContent = blog.content;
+                blogBox.appendChild(p);
+
+                // Display the PDF link if uploaded
+                if (blog.pdfUrl) {
+                    const pdfLink = document.createElement('a');
+                    pdfLink.href = blog.pdfUrl;
+                    pdfLink.textContent = "Download PDF";
+                    pdfLink.target = "_blank";
+                    blogBox.appendChild(pdfLink);
+                }
+
+                // Display the Word Document link if uploaded
+                if (blog.docUrl) {
+                    const docLink = document.createElement('a');
+                    docLink.href = blog.docUrl;
+                    docLink.textContent = "Download Word Document";
+                    docLink.target = "_blank";
+                    blogBox.appendChild(docLink);
+                }
+
+                // Like and Dislike buttons
+                const likeBtn = document.createElement('button');
+                likeBtn.textContent = `👍 ${blog.likes}`;
+                likeBtn.onclick = () => {
+                    blogs[index].likes += 1;
+                    localStorage.setItem('blogs', JSON.stringify(blogs));
+                    loadBlogs();
+                };
+                blogBox.appendChild(likeBtn);
+
+                const dislikeBtn = document.createElement('button');
+                dislikeBtn.textContent = `👎 ${blog.dislikes}`;
+                dislikeBtn.onclick = () => {
+                    blogs[index].dislikes += 1;
+                    localStorage.setItem('blogs', JSON.stringify(blogs));
+                    loadBlogs();
+                };
+                blogBox.appendChild(dislikeBtn);
+
+                // Share Button
+                const shareBtn = document.createElement('button');
+                shareBtn.textContent = '🔗 Share';
+                shareBtn.onclick = () => {
+                    const shareData = {
+                        title: blog.title,
+                        text: blog.content,
+                        url: window.location.href,
+                    };
+                    if (navigator.share) {
+                        navigator.share(shareData).catch(console.error);
+                    } else {
+                        alert('Share feature is not supported on your browser.');
+                    }
+                };
+                blogBox.appendChild(shareBtn);
+
+                blogDisplay.appendChild(blogBox);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -6,7 +6,6 @@
     <title>Aya Ragab Community</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Basic styles for the page */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -43,7 +42,6 @@
             padding: 20px;
         }
 
-        /* Styles for the blog display */
         .blog-box {
             border: 1px solid #ddd;
             padding: 10px;
@@ -57,7 +55,6 @@
             margin-bottom: 10px;
         }
 
-        /* Form styling */
         form {
             margin-bottom: 20px;
         }
@@ -89,6 +86,29 @@
             margin-right: 10px;
             padding: 5px 10px;
         }
+
+        .admin-section, .admin-password {
+            display: none;
+        }
+
+        .comment-section {
+            margin-top: 10px;
+        }
+
+        .comment-section textarea {
+            width: 100%;
+            padding: 5px;
+        }
+
+        .comment-section button {
+            padding: 5px;
+            margin-top: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
@@ -135,13 +155,28 @@
 
             <label for="blog-doc"><strong>Upload a Word Document (optional):</strong></label>
             <input type="file" id="blog-doc" accept=".doc,.docx">
-            
-            <button type="button" onclick="createBlog()">Create Blog</button>
+
+            <button type="button" onclick="submitBlog()">Submit Blog</button>
         </form>
 
         <div class="blog-display" id="blog-display">
             <!-- Blog posts will appear here -->
         </div>
+    </section>
+
+    <!-- Admin Section -->
+    <section id="admin-section">
+        <h2>Admin Approval Section</h2>
+        <div id="pending-blogs">
+            <!-- Pending blogs for admin approval will appear here -->
+        </div>
+    </section>
+
+    <!-- Admin Login -->
+    <section class="admin-password" id="admin-password">
+        <h2>Admin Login</h2>
+        <input type="password" id="admin-pass" placeholder="Enter admin password">
+        <button onclick="adminLogin()">Login</button>
     </section>
 
     <!-- Join Us Section -->
@@ -162,11 +197,14 @@
         <p>Connect with us: <a href="https://www.facebook.com/profile.php?id=100024744060698">Facebook</a></p>
     </footer>
 
-    <!-- JavaScript for Blog Creation, Likes/Dislikes, and Share -->
+    <!-- JavaScript for Blog Management -->
     <script>
         document.addEventListener('DOMContentLoaded', loadBlogs);
 
-        function createBlog() {
+        // Admin password
+        const ADMIN_PASSWORD = 'Ayayoyoyota123@&';
+
+        function submitBlog() {
             const blogTitle = document.getElementById('blog-title').value;
             const blogContent = document.getElementById('blog-content').value;
             const blogImage = document.getElementById('blog-image').files[0];
@@ -174,27 +212,26 @@
             const blogDoc = document.getElementById('blog-doc').files[0];
 
             if (blogTitle && blogContent && blogImage) {
-                // Create blog object
                 const blog = {
                     title: blogTitle,
                     content: blogContent,
                     imageUrl: URL.createObjectURL(blogImage),
                     pdfUrl: blogPdf ? URL.createObjectURL(blogPdf) : null,
                     docUrl: blogDoc ? URL.createObjectURL(blogDoc) : null,
-                    likes: 0,
-                    dislikes: 0,
+                    approved: false, // Not approved yet
+                    comments: []
                 };
 
-                // Save the blog to localStorage
                 let blogs = JSON.parse(localStorage.getItem('blogs')) || [];
                 blogs.push(blog);
                 localStorage.setItem('blogs', JSON.stringify(blogs));
 
-                // Refresh the blog display
-                loadBlogs();
+                alert('Blog submitted successfully. Please wait for the admin to approve.');
 
                 // Clear form
                 document.getElementById('blog-form').reset();
+
+                loadPendingBlogs();
             } else {
                 alert('Please fill in the title, content, and upload an image.');
             }
@@ -207,79 +244,121 @@
             let blogs = JSON.parse(localStorage.getItem('blogs')) || [];
 
             blogs.forEach((blog, index) => {
-                const blogBox = document.createElement('div');
-                blogBox.classList.add('blog-box');
+                if (blog.approved) {
+                    const blogBox = document.createElement('div');
+                    blogBox.classList.add('blog-box');
 
-                // Display the image
-                const img = document.createElement('img');
-                img.src = blog.imageUrl;
-                blogBox.appendChild(img);
+                    // Display the image
+                    const img = document.createElement('img');
+                    img.src = blog.imageUrl;
+                    blogBox.appendChild(img);
 
-                // Display the title and content
-                const h3 = document.createElement('h3');
-                h3.textContent = blog.title;
-                blogBox.appendChild(h3);
+                    // Display the title and content
+                    const h3 = document.createElement('h3');
+                    h3.textContent = blog.title;
+                    blogBox.appendChild(h3);
 
-                const p = document.createElement('p');
-                p.textContent = blog.content;
-                blogBox.appendChild(p);
+                    const p = document.createElement('p');
+                    p.textContent = blog.content;
+                    blogBox.appendChild(p);
 
-                // Display the PDF link if uploaded
-                if (blog.pdfUrl) {
-                    const pdfLink = document.createElement('a');
-                    pdfLink.href = blog.pdfUrl;
-                    pdfLink.textContent = "Download PDF";
-                    pdfLink.target = "_blank";
-                    blogBox.appendChild(pdfLink);
-                }
-
-                // Display the Word Document link if uploaded
-                if (blog.docUrl) {
-                    const docLink = document.createElement('a');
-                    docLink.href = blog.docUrl;
-                    docLink.textContent = "Download Word Document";
-                    docLink.target = "_blank";
-                    blogBox.appendChild(docLink);
-                }
-
-                // Like and Dislike buttons
-                const likeBtn = document.createElement('button');
-                likeBtn.textContent = `👍 ${blog.likes}`;
-                likeBtn.onclick = () => {
-                    blogs[index].likes += 1;
-                    localStorage.setItem('blogs', JSON.stringify(blogs));
-                    loadBlogs();
-                };
-                blogBox.appendChild(likeBtn);
-
-                const dislikeBtn = document.createElement('button');
-                dislikeBtn.textContent = `👎 ${blog.dislikes}`;
-                dislikeBtn.onclick = () => {
-                    blogs[index].dislikes += 1;
-                    localStorage.setItem('blogs', JSON.stringify(blogs));
-                    loadBlogs();
-                };
-                blogBox.appendChild(dislikeBtn);
-
-                // Share Button
-                const shareBtn = document.createElement('button');
-                shareBtn.textContent = '🔗 Share';
-                shareBtn.onclick = () => {
-                    const shareData = {
-                        title: blog.title,
-                        text: blog.content,
-                        url: window.location.href,
-                    };
-                    if (navigator.share) {
-                        navigator.share(shareData).catch(console.error);
-                    } else {
-                        alert('Share feature is not supported on your browser.');
+                    // Display the PDF link if uploaded
+                    if (blog.pdfUrl) {
+                        const pdfLink = document.createElement('a');
+                        pdfLink.href = blog.pdfUrl;
+                        pdfLink.textContent = "Download PDF";
+                        pdfLink.target = "_blank";
+                        blogBox.appendChild(pdfLink);
                     }
-                };
-                blogBox.appendChild(shareBtn);
 
-                blogDisplay.appendChild(blogBox);
+                    // Display the Word Document link if uploaded
+                    if (blog.docUrl) {
+                        const docLink = document.createElement('a');
+                        docLink.href = blog.docUrl;
+                        docLink.textContent = "Download Word Document";
+                        docLink.target = "_blank";
+                        blogBox.appendChild(docLink);
+                    }
+
+                    // Comment Section
+                    const commentSection = document.createElement('div');
+                    commentSection.classList.add('comment-section');
+
+                    const commentTextarea = document.createElement('textarea');
+                    commentTextarea.placeholder = 'Add a comment...';
+                    commentTextarea.setAttribute('id', `comment-${index}`);
+                    commentSection.appendChild(commentTextarea);
+
+                    const commentButton = document.createElement('button');
+                    commentButton.textContent = 'Submit Comment';
+                    commentButton.onclick = () => submitComment(index);
+                    commentSection.appendChild(commentButton);
+
+                    // Display comments
+                    blog.comments.forEach(comment => {
+                        const commentP = document.createElement('p');
+                        commentP.textContent = comment;
+                        commentSection.appendChild(commentP);
+                    });
+
+                    blogBox.appendChild(commentSection);
+                    blogDisplay.appendChild(blogBox);
+                }
             });
+        }
+
+        function submitComment(blogIndex) {
+            const comment = document.getElementById(`comment-${blogIndex}`).value;
+            let blogs = JSON.parse(localStorage.getItem('blogs')) || [];
+            blogs[blogIndex].comments.push(comment);
+            localStorage.setItem('blogs', JSON.stringify(blogs));
+
+            loadBlogs();
+        }
+
+        function loadPendingBlogs() {
+            const pendingBlogs = document.getElementById('pending-blogs');
+            pendingBlogs.innerHTML = ''; // Clear pending blogs display
+
+            let blogs = JSON.parse(localStorage.getItem('blogs')) || [];
+
+            blogs.forEach((blog, index) => {
+                if (!blog.approved) {
+                    const blogBox = document.createElement('div');
+                    blogBox.classList.add('blog-box');
+
+                    const h3 = document.createElement('h3');
+                    h3.textContent = blog.title;
+                    blogBox.appendChild(h3);
+
+                    const approveButton = document.createElement('button');
+                    approveButton.textContent = 'Approve';
+                    approveButton.onclick = () => approveBlog(index);
+                    blogBox.appendChild(approveButton);
+
+                    pendingBlogs.appendChild(blogBox);
+                }
+            });
+        }
+
+        function approveBlog(blogIndex) {
+            let blogs = JSON.parse(localStorage.getItem('blogs')) || [];
+            blogs[blogIndex].approved = true;
+            localStorage.setItem('blogs', JSON.stringify(blogs));
+
+            loadBlogs();
+            loadPendingBlogs();
+        }
+
+        function adminLogin() {
+            const pass = document.getElementById('admin-pass').value;
+            if (pass === ADMIN_PASSWORD) {
+                document.getElementById('admin-password').style.display = 'none';
+                document.getElementById('admin-section').style.display = 'block';
+                loadPendingBlogs();
+            } else {
+                alert('Incorrect password.');
+            }
         }
     </script>
 </body>

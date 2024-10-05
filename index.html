@@ -11,12 +11,14 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            background-color: #f4f4f4;
+            color: #333;
         }
 
         nav {
             background-color: #4CAF50;
             color: white;
-            padding: 10px;
+            padding: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -30,29 +32,37 @@
         }
 
         nav ul li {
-            margin: 0 10px;
+            margin: 0 15px;
         }
 
         nav ul li a {
             color: white;
             text-decoration: none;
+            font-weight: bold;
         }
 
         section {
             padding: 20px;
+            margin: 10px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         .blog-box {
             border: 1px solid #ddd;
-            padding: 10px;
+            padding: 15px;
             margin: 10px 0;
             background-color: #f9f9f9;
+            border-radius: 5px;
+            position: relative; /* For positioning the comment section */
         }
 
         .blog-box img {
             max-width: 100%;
             height: auto;
             margin-bottom: 10px;
+            border-radius: 5px;
         }
 
         form {
@@ -73,18 +83,23 @@
             color: white;
             border: none;
             cursor: pointer;
+            border-radius: 5px;
         }
 
         footer {
             text-align: center;
-            padding: 10px;
+            padding: 15px;
             background-color: #4CAF50;
             color: white;
+            position: relative;
+            bottom: 0;
+            width: 100%;
         }
 
         .like-dislike-buttons button {
             margin-right: 10px;
             padding: 5px 10px;
+            border-radius: 5px;
         }
 
         .admin-section, .admin-password {
@@ -96,8 +111,9 @@
         }
 
         .comment-section textarea {
-            width: 100%;
+            width: calc(100% - 20px); /* Adjust for button */
             padding: 5px;
+            border-radius: 5px;
         }
 
         .comment-section button {
@@ -107,8 +123,77 @@
             color: white;
             border: none;
             cursor: pointer;
+            border-radius: 5px;
         }
 
+        .loading-spinner {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+        }
+
+        .loading-spinner div {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 5px solid #4CAF50;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 600px) {
+            nav ul {
+                flex-direction: column;
+            }
+
+            nav ul li {
+                margin: 5px 0;
+            }
+        }
+
+        /* Carousel styles */
+        .carousel {
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .carousel img {
+            width: 100%;
+            flex: 0 0 auto;
+            transition: transform 0.5s ease;
+        }
+
+        .carousel-controls {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .carousel-controls button {
+            background-color: rgba(255, 255, 255, 0.8);
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .comment {
+            margin-top: 5px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
     </style>
 </head>
 <body>
@@ -159,6 +244,10 @@
             <button type="button" onclick="submitBlog()">Submit Blog</button>
         </form>
 
+        <div class="loading-spinner" id="loading-spinner">
+            <div></div>
+        </div>
+
         <div class="blog-display" id="blog-display">
             <!-- Blog posts will appear here -->
         </div>
@@ -190,176 +279,127 @@
         <h2>Contact Us</h2>
         <p>Email: <a href="mailto:ayaragab650@gmail.com">ayaragab650@gmail.com</a></p>
         <p>Phone: +20 112 096 5157</p>
+        <p>Connect with us: 
+            <a href="https://www.facebook.com/profile.php?id=100024744060698">Facebook</a> | 
+            <a href="https://www.instagram.com">Instagram</a> | 
+            <a href="https://twitter.com">Twitter</a>
+        </p>
     </section>
 
     <!-- Sticky Footer -->
     <footer>
-        <p>Connect with us: <a href="https://www.facebook.com/profile.php?id=100024744060698">Facebook</a></p>
+        <p>&copy; 2024 Aya Ragab Community | <a href="https://www.facebook.com/profile.php?id=100024744060698" style="color: white;">Facebook</a></p>
     </footer>
 
     <!-- JavaScript for Blog Management -->
     <script>
-        document.addEventListener('DOMContentLoaded', loadBlogs);
+        document.addEventListener('DOMContentLoaded', function() {
+            const adminSection = document.getElementById('admin-section');
+            const adminPasswordSection = document.getElementById('admin-password');
 
-        // Admin password
-        const ADMIN_PASSWORD = 'Ayayoyoyota123@&';
+            // Simulated admin password for demonstration
+            const adminPassword = "admin123"; 
 
-        function submitBlog() {
-            const blogTitle = document.getElementById('blog-title').value;
-            const blogContent = document.getElementById('blog-content').value;
-            const blogImage = document.getElementById('blog-image').files[0];
-            const blogPdf = document.getElementById('blog-pdf').files[0];
-            const blogDoc = document.getElementById('blog-doc').files[0];
-
-            if (blogTitle && blogContent && blogImage) {
-                const blog = {
-                    title: blogTitle,
-                    content: blogContent,
-                    imageUrl: URL.createObjectURL(blogImage),
-                    pdfUrl: blogPdf ? URL.createObjectURL(blogPdf) : null,
-                    docUrl: blogDoc ? URL.createObjectURL(blogDoc) : null,
-                    approved: false, // Not approved yet
-                    comments: []
-                };
-
-                let blogs = JSON.parse(localStorage.getItem('blogs')) || [];
-                blogs.push(blog);
-                localStorage.setItem('blogs', JSON.stringify(blogs));
-
-                alert('Blog submitted successfully. Please wait for the admin to approve.');
-
-                // Clear form
-                document.getElementById('blog-form').reset();
-
-                loadPendingBlogs();
-            } else {
-                alert('Please fill in the title, content, and upload an image.');
-            }
-        }
-
-        function loadBlogs() {
-            const blogDisplay = document.getElementById('blog-display');
-            blogDisplay.innerHTML = ''; // Clear the blog display
-
-            let blogs = JSON.parse(localStorage.getItem('blogs')) || [];
-
-            blogs.forEach((blog, index) => {
-                if (blog.approved) {
-                    const blogBox = document.createElement('div');
-                    blogBox.classList.add('blog-box');
-
-                    // Display the image
-                    const img = document.createElement('img');
-                    img.src = blog.imageUrl;
-                    blogBox.appendChild(img);
-
-                    // Display the title and content
-                    const h3 = document.createElement('h3');
-                    h3.textContent = blog.title;
-                    blogBox.appendChild(h3);
-
-                    const p = document.createElement('p');
-                    p.textContent = blog.content;
-                    blogBox.appendChild(p);
-
-                    // Display the PDF link if uploaded
-                    if (blog.pdfUrl) {
-                        const pdfLink = document.createElement('a');
-                        pdfLink.href = blog.pdfUrl;
-                        pdfLink.textContent = "Download PDF";
-                        pdfLink.target = "_blank";
-                        blogBox.appendChild(pdfLink);
-                    }
-
-                    // Display the Word Document link if uploaded
-                    if (blog.docUrl) {
-                        const docLink = document.createElement('a');
-                        docLink.href = blog.docUrl;
-                        docLink.textContent = "Download Word Document";
-                        docLink.target = "_blank";
-                        blogBox.appendChild(docLink);
-                    }
-
-                    // Comment Section
-                    const commentSection = document.createElement('div');
-                    commentSection.classList.add('comment-section');
-
-                    const commentTextarea = document.createElement('textarea');
-                    commentTextarea.placeholder = 'Add a comment...';
-                    commentTextarea.setAttribute('id', `comment-${index}`);
-                    commentSection.appendChild(commentTextarea);
-
-                    const commentButton = document.createElement('button');
-                    commentButton.textContent = 'Submit Comment';
-                    commentButton.onclick = () => submitComment(index);
-                    commentSection.appendChild(commentButton);
-
-                    // Display comments
-                    blog.comments.forEach(comment => {
-                        const commentP = document.createElement('p');
-                        commentP.textContent = comment;
-                        commentSection.appendChild(commentP);
-                    });
-
-                    blogBox.appendChild(commentSection);
-                    blogDisplay.appendChild(blogBox);
+            // Toggle Admin Section
+            function toggleAdminSection() {
+                if (adminSection.style.display === "none") {
+                    adminSection.style.display = "block";
+                } else {
+                    adminSection.style.display = "none";
                 }
-            });
-        }
-
-        function submitComment(blogIndex) {
-            const comment = document.getElementById(`comment-${blogIndex}`).value;
-            let blogs = JSON.parse(localStorage.getItem('blogs')) || [];
-            blogs[blogIndex].comments.push(comment);
-            localStorage.setItem('blogs', JSON.stringify(blogs));
-
-            loadBlogs();
-        }
-
-        function loadPendingBlogs() {
-            const pendingBlogs = document.getElementById('pending-blogs');
-            pendingBlogs.innerHTML = ''; // Clear pending blogs display
-
-            let blogs = JSON.parse(localStorage.getItem('blogs')) || [];
-
-            blogs.forEach((blog, index) => {
-                if (!blog.approved) {
-                    const blogBox = document.createElement('div');
-                    blogBox.classList.add('blog-box');
-
-                    const h3 = document.createElement('h3');
-                    h3.textContent = blog.title;
-                    blogBox.appendChild(h3);
-
-                    const approveButton = document.createElement('button');
-                    approveButton.textContent = 'Approve';
-                    approveButton.onclick = () => approveBlog(index);
-                    blogBox.appendChild(approveButton);
-
-                    pendingBlogs.appendChild(blogBox);
-                }
-            });
-        }
-
-        function approveBlog(blogIndex) {
-            let blogs = JSON.parse(localStorage.getItem('blogs')) || [];
-            blogs[blogIndex].approved = true;
-            localStorage.setItem('blogs', JSON.stringify(blogs));
-
-            loadBlogs();
-            loadPendingBlogs();
-        }
-
-        function adminLogin() {
-            const pass = document.getElementById('admin-pass').value;
-            if (pass === ADMIN_PASSWORD) {
-                document.getElementById('admin-password').style.display = 'none';
-                document.getElementById('admin-section').style.display = 'block';
-                loadPendingBlogs();
-            } else {
-                alert('Incorrect password.');
             }
-        }
+
+            // Function to handle blog submission
+            window.submitBlog = function() {
+                const title = document.getElementById('blog-title').value;
+                const content = document.getElementById('blog-content').value;
+                const image = document.getElementById('blog-image').files[0];
+                const pdf = document.getElementById('blog-pdf').files[0];
+                const doc = document.getElementById('blog-doc').files[0];
+
+                if (title && content && image) {
+                    // Show loading spinner
+                    const loadingSpinner = document.getElementById('loading-spinner');
+                    loadingSpinner.style.display = "flex";
+
+                    // Simulate blog post submission
+                    setTimeout(() => {
+                        loadingSpinner.style.display = "none"; // Hide loading spinner
+
+                        // Display blog post
+                        const blogDisplay = document.getElementById('blog-display');
+                        const blogBox = document.createElement('div');
+                        blogBox.className = "blog-box";
+                        blogBox.innerHTML = `
+                            <h3>${title}</h3>
+                            <img src="${URL.createObjectURL(image)}" alt="${title}">
+                            <p>${content}</p>
+                            <div class="like-dislike-buttons">
+                                <button onclick="likeBlog(this)">Like</button>
+                                <button onclick="dislikeBlog(this)">Dislike</button>
+                            </div>
+                            <div class="comment-section">
+                                <h4>Comments:</h4>
+                                <textarea placeholder="Write a comment..." rows="2"></textarea>
+                                <button onclick="addComment(this)">Comment</button>
+                                <div class="comments"></div>
+                            </div>
+                        `;
+                        blogDisplay.appendChild(blogBox);
+
+                        // Clear input fields
+                        document.getElementById('blog-form').reset();
+                    }, 1000);
+                } else {
+                    alert("Please fill in all required fields!");
+                }
+            }
+
+            // Function to like a blog post
+            window.likeBlog = function(button) {
+                alert("You liked this blog!");
+                // Additional like functionality can be implemented here
+            }
+
+            // Function to dislike a blog post
+            window.dislikeBlog = function(button) {
+                alert("You disliked this blog!");
+                // Additional dislike functionality can be implemented here
+            }
+
+            // Function to add a comment
+            window.addComment = function(button) {
+                const commentTextArea = button.previousElementSibling;
+                const commentText = commentTextArea.value;
+
+                if (commentText) {
+                    const commentSection = button.parentElement.querySelector('.comments');
+                    const commentDiv = document.createElement('div');
+                    commentDiv.className = "comment";
+                    commentDiv.textContent = commentText;
+
+                    commentSection.appendChild(commentDiv);
+                    commentTextArea.value = ""; // Clear comment input
+                } else {
+                    alert("Please write a comment!");
+                }
+            }
+
+            // Admin login function
+            window.adminLogin = function() {
+                const inputPass = document.getElementById('admin-pass').value;
+                if (inputPass === adminPassword) {
+                    adminSection.style.display = "block";
+                    adminPasswordSection.style.display = "none";
+                } else {
+                    alert("Incorrect password!");
+                }
+            }
+
+            // Toggle the admin section on page load
+            adminSection.style.display = "none"; // Initially hide admin section
+            adminPasswordSection.style.display = "block"; // Show admin password section
+        });
     </script>
 </body>
 </html>

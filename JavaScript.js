@@ -20,177 +20,132 @@ function createBlog() {
     const title = document.getElementById('blog-title').value;
     const content = document.getElementById('blog-content').value;
     const imageFile = document.getElementById('blog-image').files[0];
-    const fileFile = document.getElementById('blog-file').files[0];
+    const pdfFile = document.getElementById('blog-pdf').files[0];
+    const docFile = document.getElementById('blog-doc').files[0];
 
     if (title && content) {
-        // Convert image and file to Base64 (if available)
+        // Convert image and files to Base64 if available
         let image = '';
-        let file = '';
+        let pdf = '';
+        let doc = '';
+        
         if (imageFile) {
             const reader = new FileReader();
             reader.readAsDataURL(imageFile);
             reader.onload = function() {
                 image = reader.result; // Base64 image string
-                if (fileFile) {
-                    const fileReader = new FileReader();
-                    fileReader.readAsDataURL(fileFile);
-                    fileReader.onload = function() {
-                        file = fileReader.result; // Base64 file string
-                        saveBlog(title, content, image, file);
+                // If there are files, read them
+                if (pdfFile) {
+                    const pdfReader = new FileReader();
+                    pdfReader.readAsDataURL(pdfFile);
+                    pdfReader.onload = function() {
+                        pdf = pdfReader.result; // Base64 PDF string
+                        // Handle doc file similarly
+                        if (docFile) {
+                            const docReader = new FileReader();
+                            docReader.readAsDataURL(docFile);
+                            docReader.onload = function() {
+                                doc = docReader.result; // Base64 Doc string
+                                // Save blog once all files are processed
+                                saveBlogToServer(title, content, image, pdf, doc);
+                            };
+                        } else {
+                            saveBlogToServer(title, content, image, pdf, doc);
+                        }
                     };
                 } else {
-                    saveBlog(title, content, image, file);
+                    saveBlogToServer(title, content, image, pdf, doc);
                 }
             };
-        } else {
-            saveBlog(title, content, image, file);
         }
-
-        // Clear form fields
-        document.getElementById('blog-form').reset();
     } else {
-        alert('Please fill out all required fields.');
+        alert('Please fill in all required fields.');
     }
 }
 
-// Save Blog to Server
-function saveBlog(title, content, image, file) {
-    const blog = { title, content, image, file };
+// Save blog to local storage or server
+function saveBlogToServer(title, content, image, pdf, doc) {
+    const blog = {
+        title,
+        content,
+        imageUrl: image,
+        pdfUrl: pdf || null,
+        docUrl: doc || null,
+        approved: false,
+        comments: []
+    };
 
-    // Send the blog to the server
-    fetch('http://localhost:3000/api/blogs', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(blog)
-    })
-    .then(response => {
-        if (response.ok) {
-            return response.json();
-        }
-        throw new Error('Network response was not ok');
-    })
-    .then(data => {
-        console.log('Blog saved with ID:', data.id);
-        loadBlogsFromServer(); // Refresh the blog list
-    })
-    .catch(error => {
-        console.error('Error saving blog:', error);
-    });
+    let blogs = JSON.parse(localStorage.getItem('blogs')) || [];
+    blogs.push(blog);
+    localStorage.setItem('blogs', JSON.stringify(blogs));
+
+    alert('Blog submitted successfully. Awaiting admin approval.');
+    document.getElementById('blog-form').reset();
+    loadBlogsFromServer();
 }
 
-// Load Blogs from Server
+// Load blogs from the local storage
 function loadBlogsFromServer() {
-    fetch('http://localhost:3000/api/blogs')
-        .then(response => response.json())
-        .then(blogs => {
-            document.getElementById('blog-list').innerHTML = ''; // Clear current blogs
-            blogs.forEach(blog => displayBlog(blog));
-        })
-        .catch(error => {
-            console.error('Error loading blogs:', error);
-        });
-}
+    const blogDisplay = document.getElementById('blog-display');
+    blogDisplay.innerHTML = ''; // Clear the current display
 
-// Display Blog
-function displayBlog(blog) {
-    const blogBox = document.createElement('div');
-    blogBox.className = 'blog-box';
+    let blogs = JSON.parse(localStorage.getItem('blogs')) || [];
 
-    if (blog.image) {
-        const imgElement = document.createElement('img');
-        imgElement.src = blog.image;
-        blogBox.appendChild(imgElement);
-    }
+    blogs.forEach((blog, index) => {
+        if (blog.approved) {
+            const blogBox = document.createElement('div');
+            blogBox.classList.add('blog-box');
 
-    const blogTitle = document.createElement('h3');
-    blogTitle.textContent = blog.title;
-    const blogContent = document.createElement('p');
-    blogContent.textContent = blog.content;
+            const img = document.createElement('img');
+            img.src = blog.imageUrl;
+            blogBox.appendChild(img);
 
-    blogBox.appendChild(blogTitle);
-    blogBox.appendChild(blogContent);
+            const h3 = document.createElement('h3');
+            h3.textContent = blog.title;
+            blogBox.appendChild(h3);
 
-    if (blog.file) {
-        const fileLink = document.createElement('a');
-        fileLink.href = blog.file;
-        fileLink.textContent = 'Download Attached File';
-        fileLink.download = 'file';
-        blogBox.appendChild(fileLink);
-    }
+            const p = document.createElement('p');
+            p.textContent = blog.content;
+            blogBox.appendChild(p);
 
-    const actionDiv = document.createElement('div');
-    actionDiv.className = 'action-buttons';
+            if (blog.pdfUrl) {
+                const pdfLink = document.createElement('a');
+                pdfLink.href = blog.pdfUrl;
+                pdfLink.textContent = 'Download PDF';
+                pdfLink.target = '_blank';
+                blogBox.appendChild(pdfLink);
+            }
 
-    // Like Button
-    const likeButton = document.createElement('button');
-    likeButton.textContent = 'Like 👍';
-    let likeCount = 0;
-    likeButton.addEventListener('click', () => {
-        likeCount++;
-        likeButton.textContent = `Like 👍 (${likeCount})`;
-    });
+            if (blog.docUrl) {
+                const docLink = document.createElement('a');
+                docLink.href = blog.docUrl;
+                docLink.textContent = 'Download Document';
+                docLink.target = '_blank';
+                blogBox.appendChild(docLink);
+            }
 
-    // Dislike Button
-    const dislikeButton = document.createElement('button');
-    dislikeButton.textContent = 'Dislike 👎';
-    let dislikeCount = 0;
-    dislikeButton.addEventListener('click', () => {
-        dislikeCount++;
-        dislikeButton.textContent = `Dislike 👎 (${dislikeCount})`;
-    });
-
-    // I Support Button
-    const supportButton = document.createElement('button');
-    supportButton.textContent = 'I Support 💪';
-    let supportCount = 0;
-    supportButton.addEventListener('click', () => {
-        supportCount++;
-        supportButton.textContent = `I Support 💪 (${supportCount})`;
-    });
-
-    // Share Button
-    const shareButton = document.createElement('button');
-    shareButton.textContent = 'Share 📤';
-    shareButton.addEventListener('click', () => {
-        // Share blog title and content via navigator.share (for supported browsers)
-        if (navigator.share) {
-            navigator.share({
-                title: blog.title,
-                text: blog.content,
-                url: window.location.href // Sharing current URL
-            }).then(() => {
-                console.log('Thanks for sharing!');
-            }).catch((error) => {
-                console.error('Error sharing:', error);
-            });
-        } else {
-            alert('Your browser does not support sharing functionality.');
+            blogDisplay.appendChild(blogBox);
         }
     });
-
-    // Append all action buttons
-    actionDiv.appendChild(likeButton);
-    actionDiv.appendChild(dislikeButton);
-    actionDiv.appendChild(supportButton);
-    actionDiv.appendChild(shareButton);
-
-    blogBox.appendChild(actionDiv);
-    document.getElementById('blog-list').appendChild(blogBox);
 }
 
-// Authentication on Login
-document.getElementById('login-form').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent default form submission
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+// Admin approval logic
+function approveBlog(blogIndex) {
+    let blogs = JSON.parse(localStorage.getItem('blogs')) || [];
+    blogs[blogIndex].approved = true;
+    localStorage.setItem('blogs', JSON.stringify(blogs));
+    loadBlogsFromServer();
+}
 
-    if (authenticateUser(username, password)) {
-        alert('Login successful!');
-        // Proceed to show blog section or redirect to another page
-        document.getElementById('blog-section').style.display = 'block'; // Example action
+// Admin login functionality
+function adminLogin() {
+    const pass = document.getElementById('admin-pass').value;
+    if (pass === ADMIN_PASSWORD) {
+        document.getElementById('admin-password').style.display = 'none';
+        document.getElementById('admin-section').style.display = 'block';
+        loadPendingBlogs();
     } else {
-        alert('Invalid username or password. Please try again.');
+        alert('Incorrect password.');
     }
-});
+}
+

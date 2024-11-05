@@ -3,403 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aya Ragab Community</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Community Blog</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
             background-color: #f4f4f4;
-            color: #333;
         }
-
-        nav {
-            background-color: #4CAF50;
-            color: white;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        nav ul {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-        }
-
-        nav ul li {
-            margin: 0 15px;
-        }
-
-        nav ul li a {
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        section {
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
             padding: 20px;
-            margin: 10px;
-            background-color: white;
-            border-radius: 5px;
+            background: white;
+            border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-
+        h1 {
+            text-align: center;
+        }
         .blog-box {
             border: 1px solid #ddd;
-            padding: 15px;
-            margin: 10px 0;
-            background-color: #f9f9f9;
             border-radius: 5px;
-            position: relative; /* For positioning the comment section */
-        }
-
-        .blog-box img {
-            max-width: 100%;
-            height: auto;
-            margin-bottom: 10px;
-            border-radius: 5px;
-        }
-
-        form {
+            padding: 10px;
             margin-bottom: 20px;
         }
-
-        form input, form textarea {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        form button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        footer {
-            text-align: center;
-            padding: 15px;
-            background-color: #4CAF50;
-            color: white;
-            position: relative;
-            bottom: 0;
-            width: 100%;
-        }
-
-        .like-dislike-buttons button {
-            margin-right: 10px;
-            padding: 5px 10px;
-            border-radius: 5px;
-        }
-
-        .admin-section, .admin-password {
-            display: none;
-        }
-
-        .comment-section {
+        .like-dislike-buttons {
             margin-top: 10px;
         }
-
-        .comment-section textarea {
-            width: calc(100% - 20px); /* Adjust for button */
-            padding: 5px;
-            border-radius: 5px;
+        .comment-section {
+            margin-top: 15px;
         }
-
-        .comment-section button {
-            padding: 5px;
-            margin-top: 5px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
+        .admin-section {
+            display: none;
+            margin-top: 20px;
         }
-
         .loading-spinner {
             display: none;
             justify-content: center;
             align-items: center;
-            height: 100px;
+            height: 100vh;
         }
-
-        .loading-spinner div {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            border: 5px solid #4CAF50;
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
+        .loading-spinner img {
+            width: 50px;
+            height: 50px;
         }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        @media (max-width: 600px) {
-            nav ul {
-                flex-direction: column;
-            }
-
-            nav ul li {
-                margin: 5px 0;
-            }
-        }
-
-        /* Carousel styles */
-        .carousel {
-            display: flex;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .carousel img {
+        /* Popup Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
             width: 100%;
-            flex: 0 0 auto;
-            transition: transform 0.5s ease;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
         }
-
-        .carousel-controls {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
         }
-
-        .carousel-controls button {
-            background-color: rgba(255, 255, 255, 0.8);
-            border: none;
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
             cursor: pointer;
-            padding: 10px;
         }
-
-        .comment {
-            margin-top: 5px;
-            padding: 5px;
-            border: 1px solid #ddd;
+        .button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
             border-radius: 5px;
-            background-color: #f9f9f9;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav>
-        <div class="logo">
-            <h1>Aya Ragab Community</h1>
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Are you a User or Admin?</h2>
+            <button class="button" onclick="showUserView()">User</button>
+            <button class="button" onclick="showAdminView()">Admin</button>
         </div>
-        <ul>
-            <li><a href="#home">Home</a></li>
-            <li><a href="#about">About Us</a></li>
-            <li><a href="#blogs">Blogs</a></li>
-            <li><a href="#join">Join Us</a></li>
-            <li><a href="#contact">Contact</a></li>
-        </ul>
-    </nav>
+    </div>
 
-    <!-- Home Section -->
-    <section id="home">
-        <h2>Welcome to Aya Ragab Community</h2>
-        <p>Building connections and making a difference together.</p>
-    </section>
-
-    <!-- About Us Section -->
-    <section id="about">
-        <h2>About Us</h2>
-        <p>Our community is focused on bringing people together, sharing knowledge, and making a positive impact. Established in 2010, we continue to grow and inspire more individuals to connect.</p>
-    </section>
-
-    <!-- Blog Section -->
-    <section id="blogs">
-        <h2>Blogs</h2>
-        <form id="blog-form">
-            <input type="text" id="blog-title" placeholder="Blog Title" required>
-            <textarea id="blog-content" placeholder="Write your blog here..." rows="5" required></textarea>
-
-            <!-- Image Upload Section -->
-            <label for="blog-image"><strong>Upload an Image for the Blog:</strong></label>
-            <input type="file" id="blog-image" accept="image/*" required>
-
-            <!-- PDF and Word Uploads Section -->
-            <label for="blog-pdf"><strong>Upload a PDF (optional):</strong></label>
-            <input type="file" id="blog-pdf" accept=".pdf">
-
-            <label for="blog-doc"><strong>Upload a Word Document (optional):</strong></label>
-            <input type="file" id="blog-doc" accept=".doc,.docx">
-
-            <button type="button" onclick="submitBlog()">Submit Blog</button>
-        </form>
-
+    <div class="container" id="content">
+        <h1>Community Blog</h1>
+        <div id="blog-display"></div>
         <div class="loading-spinner" id="loading-spinner">
-            <div></div>
+            <img src="https://i.gifer.com/4xR3.gif" alt="Loading...">
         </div>
+    </div>
 
-        <div class="blog-display" id="blog-display">
-            <!-- Blog posts will appear here -->
-        </div>
-    </section>
+    <div class="admin-section" id="admin-section">
+        <h2>Create a New Blog Post</h2>
+        <form id="blog-form">
+            <input type="text" id="blog-title" placeholder="Title" required>
+            <textarea id="blog-content" placeholder="Content" required></textarea>
+            <input type="file" id="blog-image" accept="image/*" required>
+            <input type="file" id="blog-pdf" accept=".pdf">
+            <input type="file" id="blog-doc" accept=".doc,.docx">
+            <button type="button" onclick="submitBlog()">Submit</button>
+        </form>
+    </div>
 
-    <!-- Admin Section -->
-    <section id="admin-section">
-        <h2>Admin Approval Section</h2>
-        <div id="pending-blogs">
-            <!-- Pending blogs for admin approval will appear here -->
-        </div>
-    </section>
-
-    <!-- Admin Login -->
-    <section class="admin-password" id="admin-password">
-        <h2>Admin Login</h2>
-        <input type="password" id="admin-pass" placeholder="Enter admin password">
-        <button onclick="adminLogin()">Login</button>
-    </section>
-
-    <!-- Join Us Section -->
-    <section id="join">
-        <h2>Join Us</h2>
-        <p>Want to become a part of our community? Sign up for our newsletter or register for upcoming events!</p>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact">
-        <h2>Contact Us</h2>
-        <p>Email: <a href="mailto:ayaragab650@gmail.com">ayaragab650@gmail.com</a></p>
-        <p>Phone: +20 112 096 5157</p>
-        <p>Connect with us: 
-            <a href="https://www.facebook.com/profile.php?id=100024744060698">Facebook</a> | 
-            <a href="https://www.instagram.com">Instagram</a> | 
-            <a href="https://twitter.com">Twitter</a>
-        </p>
-    </section>
-
-    <!-- Sticky Footer -->
-    <footer>
-        <p>&copy; 2024 Aya Ragab Community | <a href="https://www.facebook.com/profile.php?id=100024744060698" style="color: white;">Facebook</a></p>
-    </footer>
-
-    <!-- JavaScript for Blog Management -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const adminSection = document.getElementById('admin-section');
-            const adminPasswordSection = document.getElementById('admin-password');
+        // Admin password
+        const adminPassword = "Ayayoyoyota123@&"; 
 
-            // Simulated admin password for demonstration
-            const adminPassword = "admin123"; 
+        // Show modal on page load
+        window.onload = function() {
+            document.getElementById('modal').style.display = 'block';
+        }
 
-            // Toggle Admin Section
-            function toggleAdminSection() {
-                if (adminSection.style.display === "none") {
-                    adminSection.style.display = "block";
-                } else {
-                    adminSection.style.display = "none";
+        // Close modal
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        // Show user view
+        function showUserView() {
+            closeModal();
+            // Sample blog posts (in a real scenario, this data would come from a database)
+            const samplePosts = [
+                {
+                    title: "Post 1",
+                    content: "This is the content for post 1.",
+                    image: "https://via.placeholder.com/150"
+                },
+                {
+                    title: "Post 2",
+                    content: "This is the content for post 2.",
+                    image: "https://via.placeholder.com/150"
                 }
+            ];
+            renderUserView(samplePosts);
+        }
+
+        // Show admin view
+        function showAdminView() {
+            const inputPass = prompt("Enter Admin Password:");
+            if (inputPass === adminPassword) {
+                closeModal();
+                document.getElementById('admin-section').style.display = "block";
+            } else {
+                alert("Incorrect password!");
             }
+        }
 
-            // Function to handle blog submission
-            window.submitBlog = function() {
-                const title = document.getElementById('blog-title').value;
-                const content = document.getElementById('blog-content').value;
-                const image = document.getElementById('blog-image').files[0];
-                const pdf = document.getElementById('blog-pdf').files[0];
-                const doc = document.getElementById('blog-doc').files[0];
+        // Render user view with blog posts
+        function renderUserView(posts) {
+            const blogDisplay = document.getElementById('blog-display');
+            posts.forEach(post => {
+                const blogBox = document.createElement('div');
+                blogBox.className = "blog-box";
+                blogBox.innerHTML = `
+                    <h3>${post.title}</h3>
+                    <img src="${post.image}" alt="${post.title}">
+                    <p>${post.content}</p>
+                    <div class="like-dislike-buttons">
+                        <button onclick="likeBlog(this)">Like</button>
+                        <button onclick="dislikeBlog(this)">Dislike</button>
+                    </div>
+                    <div class="comment-section">
+                        <h4>Comments:</h4>
+                        <textarea placeholder="Write a comment..." rows="2"></textarea>
+                        <button onclick="addComment(this)">Comment</button>
+                        <div class="comments"></div>
+                    </div>
+                `;
+                blogDisplay.appendChild(blogBox);
+            });
+        }
 
-                if (title && content && image) {
-                    // Show loading spinner
-                    const loadingSpinner = document.getElementById('loading-spinner');
-                    loadingSpinner.style.display = "flex";
+        // Function to handle blog submission
+        window.submitBlog = function() {
+            const title = document.getElementById('blog-title').value;
+            const content = document.getElementById('blog-content').value;
+            const image = document.getElementById('blog-image').files[0];
+            const pdf = document.getElementById('blog-pdf').files[0];
+            const doc = document.getElementById('blog-doc').files[0];
 
-                    // Simulate blog post submission
-                    setTimeout(() => {
-                        loadingSpinner.style.display = "none"; // Hide loading spinner
+            if (title && content && image) {
+                // Show loading spinner
+                const loadingSpinner = document.getElementById('loading-spinner');
+                loadingSpinner.style.display = "flex";
 
-                        // Display blog post
-                        const blogDisplay = document.getElementById('blog-display');
-                        const blogBox = document.createElement('div');
-                        blogBox.className = "blog-box";
-                        blogBox.innerHTML = `
-                            <h3>${title}</h3>
-                            <img src="${URL.createObjectURL(image)}" alt="${title}">
-                            <p>${content}</p>
-                            <div class="like-dislike-buttons">
-                                <button onclick="likeBlog(this)">Like</button>
-                                <button onclick="dislikeBlog(this)">Dislike</button>
-                            </div>
-                            <div class="comment-section">
-                                <h4>Comments:</h4>
-                                <textarea placeholder="Write a comment..." rows="2"></textarea>
-                                <button onclick="addComment(this)">Comment</button>
-                                <div class="comments"></div>
-                            </div>
-                        `;
-                        blogDisplay.appendChild(blogBox);
+                // Simulate blog post submission
+                setTimeout(() => {
+                    loadingSpinner.style.display = "none"; // Hide loading spinner
 
-                        // Clear input fields
-                        document.getElementById('blog-form').reset();
-                    }, 1000);
-                } else {
-                    alert("Please fill in all required fields!");
-                }
+                    // Display blog post
+                    const blogDisplay = document.getElementById('blog-display');
+                    const blogBox = document.createElement('div');
+                    blogBox.className = "blog-box";
+                    blogBox.innerHTML = `
+                        <h3>${title}</h3>
+                        <img src="${URL.createObjectURL(image)}" alt="${title}">
+                        <p>${content}</p>
+                        <div class="like-dislike-buttons">
+                            <button onclick="likeBlog(this)">Like</button>
+                            <button onclick="dislikeBlog(this)">Dislike</button>
+                        </div>
+                        <div class="comment-section">
+                            <h4>Comments:</h4>
+                            <textarea placeholder="Write a comment..." rows="2"></textarea>
+                            <button onclick="addComment(this)">Comment</button>
+                            <div class="comments"></div>
+                        </div>
+                    `;
+                    blogDisplay.appendChild(blogBox);
+
+                    // Clear input fields
+                    document.getElementById('blog-form').reset();
+                }, 1000);
+            } else {
+                alert("Please fill in all required fields!");
             }
+        }
 
-            // Function to like a blog post
-            window.likeBlog = function(button) {
-                alert("You liked this blog!");
-                // Additional like functionality can be implemented here
+        // Function to like a blog post
+        window.likeBlog = function(button) {
+            alert("You liked this blog!");
+        }
+
+        // Function to dislike a blog post
+        window.dislikeBlog = function(button) {
+            alert("You disliked this blog!");
+        }
+
+        // Function to add a comment
+        window.addComment = function(button) {
+            const commentTextArea = button.previousElementSibling;
+            const commentText = commentTextArea.value;
+
+            if (commentText) {
+                const commentSection = button.parentElement.querySelector('.comments');
+                const commentDiv = document.createElement('div');
+                commentDiv.className = "comment";
+                commentDiv.textContent = commentText;
+
+                commentSection.appendChild(commentDiv);
+                commentTextArea.value = ""; // Clear the textarea
+            } else {
+                alert("Please enter a comment!");
             }
-
-            // Function to dislike a blog post
-            window.dislikeBlog = function(button) {
-                alert("You disliked this blog!");
-                // Additional dislike functionality can be implemented here
-            }
-
-            // Function to add a comment
-            window.addComment = function(button) {
-                const commentTextArea = button.previousElementSibling;
-                const commentText = commentTextArea.value;
-
-                if (commentText) {
-                    const commentSection = button.parentElement.querySelector('.comments');
-                    const commentDiv = document.createElement('div');
-                    commentDiv.className = "comment";
-                    commentDiv.textContent = commentText;
-
-                    commentSection.appendChild(commentDiv);
-                    commentTextArea.value = ""; // Clear comment input
-                } else {
-                    alert("Please write a comment!");
-                }
-            }
-
-            // Admin login function
-            window.adminLogin = function() {
-                const inputPass = document.getElementById('admin-pass').value;
-                if (inputPass === adminPassword) {
-                    adminSection.style.display = "block";
-                    adminPasswordSection.style.display = "none";
-                } else {
-                    alert("Incorrect password!");
-                }
-            }
-
-            // Toggle the admin section on page load
-            adminSection.style.display = "none"; // Initially hide admin section
-            adminPasswordSection.style.display = "block"; // Show admin password section
-        });
+        }
     </script>
 </body>
 </html>
